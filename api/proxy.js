@@ -1,25 +1,28 @@
-export async function onRequest(context) {
-    const { request } = context;
-    const url = new URL(request.url);
-    const actualUrlStr = url.searchParams.get('url');
+addEventListener('fetch', event => {
+  event.respondWith(handleRequest(event.request))
+})
 
-    if (!actualUrlStr) {
-        return new Response('URL is required', { status: 400 });
-    }
+async function handleRequest(request) {
+  const url = new URL(request.url);
 
-    const actualUrl = new URL(actualUrlStr);
-    const modifiedRequest = new Request(actualUrl, {
-        headers: request.headers,
-        method: request.method,
-        body: request.body,
-        redirect: 'follow'
-    });
+  // 获取要代理的实际 URL
+  const actualUrlStr = url.pathname.replace("/api/proxy/", "") + url.search + url.hash;
+  const actualUrl = new URL(actualUrlStr);
 
-    const response = await fetch(modifiedRequest);
-    const modifiedResponse = new Response(response.body, response);
+  // 创建代理请求
+  const modifiedRequest = new Request(actualUrl, {
+    headers: request.headers,
+    method: request.method,
+    body: request.body,
+    redirect: 'follow'
+  });
 
-    // 添加允许跨域访问的响应头
-    modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+  // 发送代理请求并获取响应
+  const response = await fetch(modifiedRequest);
 
-    return modifiedResponse;
+  // 创建新的响应并允许跨域访问
+  const modifiedResponse = new Response(response.body, response);
+  modifiedResponse.headers.set('Access-Control-Allow-Origin', '*');
+
+  return modifiedResponse;
 }
