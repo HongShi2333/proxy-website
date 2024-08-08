@@ -1,6 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<style>
+body {
+  background-color: #fbfbfb;
+  font-family: Arial, sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #444;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+form {
+  background-color: white;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  padding: 2rem;
+  border-radius: 8px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  font-size: 18px;
+  padding: 15px;
+  border: solid 1px #ccc;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+button {
+  padding: 15px;
+  background-color: #0288d1;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+button:hover {
+  background-color: #039BE5;
+}
+</style>
   <meta charset="UTF-8">
   <title>代理服务器</title>
 </head>
@@ -16,8 +67,17 @@
       event.preventDefault();
       const input = document.getElementById('url');
       const actualUrl = input.value;
-      const proxyUrl = '/api/proxy/' + actualUrl;
-      location.href = proxyUrl;
+      // 使用 Fetch API 发送请求到 /api/proxy 路径
+      fetch('/api/proxy?url=' + encodeURIComponent(actualUrl))
+        .then(response => response.text())
+        .then(data => {
+          // 在新窗口打开代理结果
+          window.open(URL.createObjectURL(new Blob([data], { type: 'text/html' })), '_blank');
+        })
+        .catch(error => {
+          console.error('代理请求出错:', error);
+          // 处理错误，例如显示错误信息
+        });
     });
   </script>
 </body>
